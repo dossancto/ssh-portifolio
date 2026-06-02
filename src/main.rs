@@ -2,8 +2,8 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use ratatui::backend::CrosstermBackend;
-use ratatui::layout::Rect;
-use ratatui::style::{Color, Style};
+use ratatui::layout::{Alignment, Constraint, Direction, Layout, Rect};
+use ratatui::style::{Color, Modifier, Style};
 use ratatui::widgets::{Block, Borders, Clear, Paragraph};
 use ratatui::{Terminal, TerminalOptions, Viewport};
 use russh::keys::ssh_key::{self, PublicKey};
@@ -96,18 +96,68 @@ impl AppServer {
                         .draw(|f| {
                             let area = f.area();
                             f.render_widget(Clear, area);
-                            let style = match app.counter % 3 {
-                                0 => Style::default().fg(Color::Red),
-                                1 => Style::default().fg(Color::Green),
-                                _ => Style::default().fg(Color::Blue),
+                            let accent = match app.counter % 4 {
+                                _ => Color::LightGreen,
                             };
-                            let paragraph = Paragraph::new(format!("Counter: {}", app.counter))
-                                .alignment(ratatui::layout::Alignment::Center)
-                                .style(style);
-                            let block = Block::default()
-                                .title("Press 'c' to reset the counter!")
-                                .borders(Borders::ALL);
-                            f.render_widget(paragraph.block(block), area);
+
+                            let frame = Block::default()
+                                .title(" dossancto ")
+                                .title_alignment(Alignment::Center)
+                                .borders(Borders::ALL)
+                                .border_style(Style::default().fg(Color::DarkGray));
+                            let inner = frame.inner(area);
+                            f.render_widget(frame, area);
+
+                            let sections = Layout::default()
+                                .direction(Direction::Vertical)
+                                .constraints([
+                                    Constraint::Length(2),
+                                    Constraint::Length(8),
+                                    Constraint::Length(12),
+                                    Constraint::Length(3),
+                                ])
+                                .split(inner);
+
+                            let title = Paragraph::new(
+                                r"
+ _____     ______     ______     ______     ______     __   __     ______     ______   ______    
+/\  __-.  /\  __ \   /\  ___\   /\  ___\   /\  __ \   /\ '-.\ \   /\  ___\   /\__  _\ /\  __ \   
+\ \ \/\ \ \ \ \/\ \  \ \___  \  \ \___  \  \ \  __ \  \ \ \-.  \  \ \ \____  \/_/\ \/ \ \ \/\ \  
+ \ \____-  \ \_____\  \/\_____\  \/\_____\  \ \_\ \_\  \ \_\\'\_\  \ \_____\    \ \_\  \ \_____\ 
+  \/____/   \/_____/   \/_____/   \/_____/   \/_/\/_/   \/_/ \/_/   \/_____/     \/_/   \/_____/ 
+                                                                                                 
+",
+                            )
+                            .alignment(Alignment::Center)
+                            .style(Style::default().fg(accent).add_modifier(Modifier::BOLD));
+
+                            let roletitle = Paragraph::new(
+                                r"
+                                                       
+ ____  _____ _____ _____ __    _____ _____ _____ _____ 
+|    \|   __|  |  |   __|  |  |     |  _  |   __| __  |
+|  |  |   __|  |  |   __|  |__|  |  |   __|   __|    -|
+|____/|_____|\___/|_____|_____|_____|__|  |_____|__|__|
+                                                       
+",
+                            )
+                            .alignment(Alignment::Center)
+                            .style(Style::default().fg(Color::LightBlue).add_modifier(Modifier::BOLD));
+
+                            let subtitle = Paragraph::new(
+                                "Building fast, reliable, and creative software experiences.",
+                            )
+                            .alignment(Alignment::Center)
+                            .style(Style::default().fg(Color::Gray));
+
+                            let controls = Paragraph::new("Press 'q' to quit")
+                                .alignment(Alignment::Center)
+                                .style(Style::default().fg(Color::DarkGray));
+
+                            f.render_widget(subtitle, sections[0]);
+                            f.render_widget(title, sections[1]);
+                            f.render_widget(roletitle, sections[2]);
+                            f.render_widget(controls, sections[3]);
                         })
                         .unwrap();
                 }
